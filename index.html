@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Basic Flight Sim</title>
+    <!-- Load CesiumJS -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.85/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.85/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <script>
+      var viewer = new Cesium.Viewer("cesiumContainer");
+     // Define the URL for the 3D model file
+const aircraftUrl = 'path/to/your/model.gltf';
+
+// Load the 3D model
+const aircraftModel = await Cesium.Model.fromAsync(aircraftUrl);
+viewer.scene.primitives.add(aircraftModel);
+
+// Position the aircraft above the center of the map
+const rectangular = Cesium.Rectangle.fromDegrees(-100.0, 30.0, -50.0, 50.0);
+await viewer.camera.lookAtAreaAsync({
+  rectangle: rectangular,
+});
+aircraftModel.position = viewer.camera.positionWC;
+
+      let lastTime = Date.now();
+document.addEventListener('keydown', (e) => {
+  const dt = (Date.now() - lastTime) / 1000;
+  switch (e.code) {
+    case 'ArrowUp':
+      aircraftModel.position.z -= 10 * dt;
+      break;
+    case 'ArrowDown':
+      aircraftModel.position.z += 10 * dt;
+      break;
+    case 'ArrowLeft':
+      aircraftModel.rotation._heading += Math.PI / 32 * dt;
+      break;
+    case 'ArrowRight':
+      aircraftModel.rotation._heading -= Math.PI / 32 * dt;
+      break;
+  }
+  viewer.camera.flyTo({
+    destination: aircraftModel.position,
+    orientation: {
+      heading: aircraftModel.rotation._heading,
+      pitch: -Math.PI / 2,
+      roll: 0,
+    },
+  });
+  lastTime = Date.now();
+});
+
+    </script>
+  </body>
+</html>
